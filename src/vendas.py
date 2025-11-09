@@ -2,53 +2,76 @@
 # -*- coding: utf-8 -*-
 """
 Módulo de gerenciamento de vendas
-CRUD completo para vendas
+CRUD completo de vendas
 """
 
 import psycopg2
 from datetime import datetime
-from database import Database
 
-# Instância do banco
-db = Database()
+# ============================================================================
+# CONEXÃO
+# ============================================================================
 
-def registrar_venda(cliente_id, produto_id, quantidade, observacao=None):
+def conectar():
+    """Conecta ao banco de dados"""
+    try:
+        conn = psycopg2.connect(
+            host="localhost",
+            database="sistema_clientes",
+            user="postgres",
+            password="postgres"
+        )
+        return conn
+    except Exception as e:
+        print(f"\n❌ Erro ao conectar: {e}")
+        return None
+
+# ============================================================================
+# CRUD DE VENDAS
+# ============================================================================
+
+def adicionar_venda(cliente_id, produto_id, quantidade, observacao=""):
     """
-    Registra uma nova venda
+    Adiciona uma nova venda
     
     Args:
         cliente_id: ID do cliente
         produto_id: ID do produto
         quantidade: Quantidade vendida
         observacao: Observação opcional
-    
+        
     Returns:
-        ID da venda criada ou None em caso de erro
+        ID da venda ou None em caso de erro
     """
-    conn = db.conectar()
+    conn = conectar()
     if not conn:
         return None
     
     try:
         cursor = conn.cursor()
         
-        # Buscar preço atual do produto
+        # Buscar preço do produto
         cursor.execute("SELECT preco, estoque FROM produtos WHERE id = %s", (produto_id,))
         resultado = cursor.fetchone()
         
         if not resultado:
-            print(f"❌ Produto ID {produto_id} não encontrado!")
+            print(f"\n❌ Produto ID {produto_id} não encontrado!")
+            cursor.close()
+            conn.close()
             return None
         
         preco, estoque = resultado
         
         # Verificar estoque
         if estoque < quantidade:
-            print(f"❌ Estoque insuficiente! Disponível: {estoque}, Solicitado: {quantidade}")
+            print(f"\n❌ Estoque insuficiente! Disponível: {estoque}, Solicitado: {quantidade}")
+            cursor.close()
+            conn.close()
             return None
         
-        valor_unitario = preco
-        valor_total = quantidade * valor_unitario
+        # Calcular valor total
+        valor_unitario = float(preco)
+        valor_total = valor_unitario * quantidade
         
         # Inserir venda
         query = """
@@ -60,29 +83,25 @@ def registrar_venda(cliente_id, produto_id, quantidade, observacao=None):
         cursor.execute(query, (cliente_id, produto_id, quantidade, valor_unitario, valor_total, observacao))
         venda_id = cursor.fetchone()[0]
         
-        # Atualizar estoque do produto
-        cursor.execute(
-            "UPDATE produtos SET estoque = estoque - %s WHERE id = %s",
-            (quantidade, produto_id)
-        )
+        # Atualizar estoque
+        cursor.execute("""
+            UPDATE produtos 
+            SET estoque = estoque - %s 
+            WHERE id = %s
+        """, (quantidade, produto_id))
         
         conn.commit()
-        
-        print("\n" + "=" * 80)
-        print("✅ VENDA REGISTRADA COM SUCESSO!")
-        print("=" * 80)
-        print(f"\n📋 ID da Venda: {venda_id}")
-        print(f"💰 Valor Total: R$ {valor_total:.2f}")
-        print(f"📦 Estoque Atualizado: {estoque - quantidade} unidades")
-        print("\n" + "=" * 80)
-        
         cursor.close()
         conn.close()
+        
+        print(f"\n✅ Venda registrada com sucesso! ID: {venda_id}")
+        print(f"💰 Valor total: R$ {valor_total:.2f}")
+        print(f"📦 Estoque atualizado: {estoque} → {estoque - quantidade}")
         
         return venda_id
         
     except Exception as e:
-        print(f"\n❌ Erro ao registrar venda: {e}")
+        print(f"\n❌ Erro ao adicionar venda: {e}")
         if conn:
             conn.rollback()
             conn.close()
@@ -90,15 +109,15 @@ def registrar_venda(cliente_id, produto_id, quantidade, observacao=None):
 
 def listar_vendas(limite=50):
     """
-    Lista todas as vendas com informações de cliente e produto
+    Lista vendas com informações de cliente e produto
     
     Args:
         limite: Número máximo de vendas a retornar
-    
+        
     Returns:
         Lista de tuplas com dados das vendas
     """
-    conn = db.conectar()
+    conn = conectar()
     if not conn:
         return []
     
@@ -113,8 +132,7 @@ def listar_vendas(limite=50):
                 v.quantidade,
                 v.valor_unitario,
                 v.valor_total,
-                v.data_venda,
-                v.observacao
+                v.data_venda
             FROM vendas v
             JOIN clientes c ON v.cliente_id = c.id
             JOIN produtos p ON v.produto_id = p.id
@@ -138,15 +156,15 @@ def listar_vendas(limite=50):
 
 def buscar_venda(venda_id):
     """
-    Busca uma venda específica por ID
+    Busca uma venda por ID
     
     Args:
         venda_id: ID da venda
-    
+        
     Returns:
         Tupla com dados da venda ou None
     """
-    conn = db.conectar()
+    conn = conectar()
     if not conn:
         return None
     
@@ -187,15 +205,15 @@ def buscar_venda(venda_id):
 
 def vendas_por_cliente(cliente_id):
     """
-    Lista todas as vendas de um cliente específico
+    Lista vendas de um cliente específico
     
     Args:
         cliente_id: ID do cliente
-    
+        
     Returns:
         Lista de tuplas com vendas do cliente
     """
-    conn = db.conectar()
+    conn = conectar()
     if not conn:
         return []
     
@@ -231,15 +249,15 @@ def vendas_por_cliente(cliente_id):
 
 def vendas_por_produto(produto_id):
     """
-    Lista todas as vendas de um produto específico
+    Lista vendas de um produto específico
     
     Args:
         produto_id: ID do produto
-    
+        
     Returns:
         Lista de tuplas com vendas do produto
     """
-    conn = db.conectar()
+    conn = conectar()
     if not conn:
         return []
     
@@ -278,12 +296,12 @@ def cancelar_venda(venda_id):
     Cancela uma venda e devolve o estoque
     
     Args:
-        venda_id: ID da venda a ser cancelada
-    
+        venda_id: ID da venda
+        
     Returns:
         True se cancelada com sucesso, False caso contrário
     """
-    conn = db.conectar()
+    conn = conectar()
     if not conn:
         return False
     
@@ -291,34 +309,38 @@ def cancelar_venda(venda_id):
         cursor = conn.cursor()
         
         # Buscar dados da venda
-        cursor.execute(
-            "SELECT produto_id, quantidade FROM vendas WHERE id = %s",
-            (venda_id,)
-        )
+        cursor.execute("""
+            SELECT produto_id, quantidade 
+            FROM vendas 
+            WHERE id = %s
+        """, (venda_id,))
+        
         resultado = cursor.fetchone()
         
         if not resultado:
-            print(f"❌ Venda ID {venda_id} não encontrada!")
+            print(f"\n❌ Venda ID {venda_id} não encontrada!")
+            cursor.close()
+            conn.close()
             return False
         
         produto_id, quantidade = resultado
         
+        # Devolver ao estoque
+        cursor.execute("""
+            UPDATE produtos 
+            SET estoque = estoque + %s 
+            WHERE id = %s
+        """, (quantidade, produto_id))
+        
         # Deletar venda
         cursor.execute("DELETE FROM vendas WHERE id = %s", (venda_id,))
         
-        # Devolver estoque
-        cursor.execute(
-            "UPDATE produtos SET estoque = estoque + %s WHERE id = %s",
-            (quantidade, produto_id)
-        )
-        
         conn.commit()
-        
-        print(f"\n✅ Venda ID {venda_id} cancelada com sucesso!")
-        print(f"📦 Estoque devolvido: {quantidade} unidades")
-        
         cursor.close()
         conn.close()
+        
+        print(f"\n✅ Venda cancelada com sucesso!")
+        print(f"📦 Estoque devolvido: +{quantidade} unidades")
         
         return True
         
@@ -329,6 +351,10 @@ def cancelar_venda(venda_id):
             conn.close()
         return False
 
+# ============================================================================
+# ESTATÍSTICAS
+# ============================================================================
+
 def estatisticas_vendas():
     """
     Retorna estatísticas gerais de vendas
@@ -336,9 +362,15 @@ def estatisticas_vendas():
     Returns:
         Dicionário com estatísticas
     """
-    conn = db.conectar()
+    conn = conectar()
     if not conn:
-        return {}
+        return {
+            'total_vendas': 0,
+            'total_faturado': 0.0,
+            'ticket_medio': 0.0,
+            'top_produtos': [],
+            'top_clientes': []
+        }
     
     try:
         cursor = conn.cursor()
@@ -355,9 +387,9 @@ def estatisticas_vendas():
         """)
         
         resultado = cursor.fetchone()
-        stats['total_vendas'] = resultado[0]
-        stats['total_faturado'] = float(resultado[1])
-        stats['ticket_medio'] = float(resultado[2])
+        stats['total_vendas'] = resultado[0] if resultado else 0
+        stats['total_faturado'] = float(resultado[1]) if resultado else 0.0
+        stats['ticket_medio'] = float(resultado[2]) if resultado else 0.0
         
         # Top 5 produtos mais vendidos
         cursor.execute("""
@@ -394,16 +426,77 @@ def estatisticas_vendas():
         print(f"\n❌ Erro ao buscar estatísticas: {e}")
         if conn:
             conn.close()
-        return {}
+        return {
+            'total_vendas': 0,
+            'total_faturado': 0.0,
+            'ticket_medio': 0.0,
+            'top_produtos': [],
+            'top_clientes': []
+        }
 
-# Teste do módulo
+# Alias para compatibilidade
+estatisticas_vendas_v2 = estatisticas_vendas
+
+def contar_vendas():
+    """
+    Conta o total de vendas
+    
+    Returns:
+        Número total de vendas
+    """
+    conn = conectar()
+    if not conn:
+        return 0
+    
+    try:
+        cursor = conn.cursor()
+        cursor.execute("SELECT COUNT(*) FROM vendas")
+        total = cursor.fetchone()[0]
+        cursor.close()
+        conn.close()
+        return total
+    except Exception as e:
+        print(f"\n❌ Erro ao contar vendas: {e}")
+        if conn:
+            conn.close()
+        return 0
+
+# ============================================================================
+# TESTE DO MÓDULO
+# ============================================================================
+
 if __name__ == "__main__":
     print("🧪 Testando módulo de vendas...\n")
     
     # Listar vendas
+    print("📋 Listando vendas...")
     vendas = listar_vendas(10)
-    print(f"✅ Total de vendas: {len(vendas)}")
+    print(f"✅ Total de vendas: {len(vendas)}\n")
     
     # Estatísticas
+    print("📊 Estatísticas...")
     stats = estatisticas_vendas()
-    print(f"✅ Faturamento total: R$ {stats.get('total_faturado', 0):.2f}")
+    print(f"✅ Total de vendas: {stats['total_vendas']}")
+    print(f"💰 Faturamento total: R$ {stats['total_faturado']:.2f}")
+    print(f"🎯 Ticket médio: R$ {stats['ticket_medio']:.2f}")
+    
+    if stats['top_produtos']:
+        print(f"\n🏆 Top produtos:")
+        for produto, qtd in stats['top_produtos']:
+            print(f"   {produto}: {qtd} unidades")
+    
+    if stats['top_clientes']:
+        print(f"\n👥 Top clientes:")
+        for cliente, total in stats['top_clientes']:
+            print(f"   {cliente}: R$ {total:.2f}")
+    
+    print("\n✅ Módulo de vendas funcionando corretamente!")
+
+# Alias para compatibilidade com main.py
+registrar_venda = adicionar_venda
+
+# Alias para compatibilidade com main.py
+registrar_venda = adicionar_venda
+
+# Alias para compatibilidade
+registrar_venda = adicionar_venda
