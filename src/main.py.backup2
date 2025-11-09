@@ -1,0 +1,486 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Sistema de Gerenciamento de Clientes e Produtos
+Menu principal integrado
+"""
+
+import cliente
+import produto
+import sys
+
+def limpar_tela():
+    """Limpa a tela do terminal"""
+    import os
+    os.system('clear' if os.name != 'nt' else 'cls')
+
+def pausar():
+    """Pausa e aguarda Enter"""
+    input("\n⏸️  Pressione ENTER para continuar...")
+
+def menu_principal():
+    """Menu principal do sistema"""
+    while True:
+        limpar_tela()
+        print("=" * 80)
+        print(" " * 20 + "🏢 SISTEMA DE GERENCIAMENTO")
+        print("=" * 80)
+        print("\n📋 MENU PRINCIPAL:\n")
+        print("   1. 👥 Gerenciar Clientes")
+        print("   2. 📦 Gerenciar Produtos")
+        print("   3. 📊 Relatórios")
+        print("   4. ℹ️  Sobre o Sistema")
+        print("   5. 🚪 Sair")
+        print("\n" + "-" * 80)
+        
+        opcao = input("\n👉 Escolha uma opção: ").strip()
+        
+        if opcao == "1":
+            menu_clientes()
+        elif opcao == "2":
+            menu_produtos()
+        elif opcao == "3":
+            menu_relatorios()
+        elif opcao == "4":
+            sobre_sistema()
+        elif opcao == "5":
+            limpar_tela()
+            print("\n" + "=" * 80)
+            print(" " * 25 + "👋 ATÉ LOGO!")
+            print("=" * 80)
+            print("\n   Obrigado por usar o Sistema de Gerenciamento!")
+            print("\n" + "=" * 80 + "\n")
+            sys.exit(0)
+        else:
+            print("\n❌ Opção inválida! Tente novamente.")
+            pausar()
+
+def menu_clientes():
+    """Menu de gerenciamento de clientes"""
+    while True:
+        limpar_tela()
+        print("=" * 80)
+        print(" " * 25 + "👥 GERENCIAR CLIENTES")
+        print("=" * 80)
+        print("\n📋 OPÇÕES:\n")
+        print("   1. ➕ Cadastrar novo cliente")
+        print("   2. 📋 Listar todos os clientes")
+        print("   3. 🔍 Buscar cliente por ID")
+        print("   4. ✏️  Atualizar cliente")
+        print("   5. 🗑️  Deletar cliente")
+        print("   6. 📊 Estatísticas de clientes")
+        print("   7. ⬅️  Voltar ao menu principal")
+        print("\n" + "-" * 80)
+        
+        opcao = input("\n👉 Escolha uma opção: ").strip()
+        
+        if opcao == "1":
+            cadastrar_cliente()
+        elif opcao == "2":
+            listar_clientes()
+        elif opcao == "3":
+            buscar_cliente()
+        elif opcao == "4":
+            atualizar_cliente()
+        elif opcao == "5":
+            deletar_cliente()
+        elif opcao == "6":
+            estatisticas_clientes()
+        elif opcao == "7":
+            break
+        else:
+            print("\n❌ Opção inválida!")
+            pausar()
+
+def menu_produtos():
+    """Menu de gerenciamento de produtos"""
+    while True:
+        limpar_tela()
+        print("=" * 80)
+        print(" " * 25 + "📦 GERENCIAR PRODUTOS")
+        print("=" * 80)
+        print("\n📋 OPÇÕES:\n")
+        print("   1. ➕ Cadastrar novo produto")
+        print("   2. 📋 Listar todos os produtos")
+        print("   3. 🔍 Buscar produto por ID")
+        print("   4. ✏️  Atualizar produto")
+        print("   5. 🗑️  Deletar produto")
+        print("   6. 📊 Estatísticas de produtos")
+        print("   7. ⬅️  Voltar ao menu principal")
+        print("\n" + "-" * 80)
+        
+        opcao = input("\n👉 Escolha uma opção: ").strip()
+        
+        if opcao == "1":
+            cadastrar_produto()
+        elif opcao == "2":
+            listar_produtos()
+        elif opcao == "3":
+            buscar_produto()
+        elif opcao == "4":
+            atualizar_produto()
+        elif opcao == "5":
+            deletar_produto()
+        elif opcao == "6":
+            estatisticas_produtos()
+        elif opcao == "7":
+            break
+        else:
+            print("\n❌ Opção inválida!")
+            pausar()
+
+def menu_relatorios():
+    """Menu de relatórios"""
+    limpar_tela()
+    print("=" * 80)
+    print(" " * 28 + "📊 RELATÓRIOS")
+    print("=" * 80)
+    print("\n🔧 Em desenvolvimento...\n")
+    print("   Relatórios disponíveis em breve:")
+    print("   • Top 10 clientes")
+    print("   • Produtos mais vendidos")
+    print("   • Vendas por cidade")
+    print("   • Estoque baixo")
+    print("\n" + "=" * 80)
+    pausar()
+
+def sobre_sistema():
+    """Informações sobre o sistema"""
+    limpar_tela()
+    print("=" * 80)
+    print(" " * 25 + "ℹ️  SOBRE O SISTEMA")
+    print("=" * 80)
+    print("\n📋 Sistema de Gerenciamento de Clientes e Produtos")
+    print("\n📅 Versão: 1.0.0")
+    print("👤 Desenvolvedor: Markko")
+    print("🗄️  Banco de Dados: PostgreSQL")
+    print("🐍 Linguagem: Python 3")
+    print("📝 Git: https://github.com/Markko1982/sistema-clientes" )
+    print("\n💡 Funcionalidades:")
+    print("   ✅ Gerenciamento de clientes")
+    print("   ✅ Gerenciamento de produtos")
+    print("   ✅ Importação de CSV")
+    print("   ✅ Busca avançada")
+    print("   ⏳ Relatórios (em breve)")
+    print("   ⏳ Sistema de vendas (em breve)")
+    print("\n" + "=" * 80)
+    pausar()
+
+# ============================================================================
+# FUNÇÕES DE CLIENTES
+# ============================================================================
+
+def cadastrar_cliente():
+    """Cadastra novo cliente"""
+    limpar_tela()
+    print("=" * 80)
+    print(" " * 25 + "➕ CADASTRAR CLIENTE")
+    print("=" * 80)
+    
+    try:
+        nome = input("\n👤 Nome: ").strip()
+        email = input("📧 Email: ").strip()
+        telefone = input("📱 Telefone: ").strip()
+        cidade = input("🏙️  Cidade: ").strip()
+        
+        if nome and email:
+            cliente.cadastrar_cliente(nome, email, telefone, cidade)
+        else:
+            print("\n❌ Nome e email são obrigatórios!")
+    except Exception as e:
+        print(f"\n❌ Erro: {e}")
+    
+    pausar()
+
+def listar_clientes():
+    """Lista todos os clientes"""
+    limpar_tela()
+    print("=" * 80)
+    print(" " * 25 + "📋 LISTA DE CLIENTES")
+    print("=" * 80)
+    
+    try:
+        clientes = cliente.listar_clientes(limite=20)
+        
+        if clientes:
+            print(f"\n✅ Total: {len(clientes)} clientes\n")
+            print("-" * 80)
+            print(f"{'ID':<5} {'NOME':<30} {'EMAIL':<30} {'CIDADE':<15}")
+            print("-" * 80)
+            
+            for c in clientes:
+                print(f"{c[0]:<5} {c[1][:30]:<30} {c[2][:30]:<30} {c[4][:15] if c[4] else '-':<15}")
+            
+            print("-" * 80)
+        else:
+            print("\n⚠️  Nenhum cliente cadastrado.")
+    except Exception as e:
+        print(f"\n❌ Erro: {e}")
+    
+    pausar()
+
+def buscar_cliente():
+    """Busca cliente por ID"""
+    limpar_tela()
+    print("=" * 80)
+    print(" " * 25 + "🔍 BUSCAR CLIENTE")
+    print("=" * 80)
+    
+    try:
+        cliente_id = int(input("\n🔢 ID do cliente: ").strip())
+        c = cliente.buscar_cliente(cliente_id)
+        
+        if c:
+            print("\n✅ Cliente encontrado:\n")
+            print(f"   ID: {c[0]}")
+            print(f"   Nome: {c[1]}")
+            print(f"   Email: {c[2]}")
+            print(f"   Telefone: {c[3] if c[3] else '-'}")
+            print(f"   Cidade: {c[4] if c[4] else '-'}")
+        else:
+            print(f"\n❌ Cliente ID {cliente_id} não encontrado.")
+    except ValueError:
+        print("\n❌ ID inválido!")
+    except Exception as e:
+        print(f"\n❌ Erro: {e}")
+    
+    pausar()
+
+def atualizar_cliente():
+    """Atualiza dados de um cliente"""
+    limpar_tela()
+    print("=" * 80)
+    print(" " * 25 + "✏️  ATUALIZAR CLIENTE")
+    print("=" * 80)
+    
+    try:
+        cliente_id = int(input("\n🔢 ID do cliente: ").strip())
+        
+        print("\n�� Deixe em branco para não alterar\n")
+        nome = input("👤 Novo nome: ").strip() or None
+        email = input("📧 Novo email: ").strip() or None
+        telefone = input("📱 Novo telefone: ").strip() or None
+        cidade = input("🏙️  Nova cidade: ").strip() or None
+        
+        cliente.atualizar_cliente(cliente_id, nome, email, telefone, cidade)
+    except ValueError:
+        print("\n❌ ID inválido!")
+    except Exception as e:
+        print(f"\n❌ Erro: {e}")
+    
+    pausar()
+
+def deletar_cliente():
+    """Deleta um cliente"""
+    limpar_tela()
+    print("=" * 80)
+    print(" " * 25 + "🗑️  DELETAR CLIENTE")
+    print("=" * 80)
+    
+    try:
+        cliente_id = int(input("\n🔢 ID do cliente: ").strip())
+        
+        confirma = input(f"\n⚠️  Tem certeza que deseja deletar o cliente ID {cliente_id}? (s/n): ").strip().lower()
+        
+        if confirma == 's':
+            cliente.deletar_cliente(cliente_id)
+        else:
+            print("\n❌ Operação cancelada.")
+    except ValueError:
+        print("\n❌ ID inválido!")
+    except Exception as e:
+        print(f"\n❌ Erro: {e}")
+    
+    pausar()
+
+def estatisticas_clientes():
+    """Mostra estatísticas de clientes"""
+    limpar_tela()
+    print("=" * 80)
+    print(" " * 25 + "📊 ESTATÍSTICAS")
+    print("=" * 80)
+    
+    try:
+        total = cliente.contar_clientes()
+        print(f"\n✅ Total de clientes cadastrados: {total}")
+    except Exception as e:
+        print(f"\n❌ Erro: {e}")
+    
+    pausar()
+
+# ============================================================================
+# FUNÇÕES DE PRODUTOS
+# ============================================================================
+
+def cadastrar_produto():
+    """Cadastra novo produto"""
+    limpar_tela()
+    print("=" * 80)
+    print(" " * 25 + "➕ CADASTRAR PRODUTO")
+    print("=" * 80)
+    
+    try:
+        nome = input("\n📦 Nome: ").strip()
+        preco = float(input("💰 Preço: R$ ").strip())
+        estoque = int(input("📊 Estoque: ").strip())
+        categoria = input("🏷️  Categoria: ").strip()
+        descricao = input("📝 Descrição (opcional): ").strip() or None
+        
+        if nome and preco >= 0 and estoque >= 0:
+            produto.cadastrar_produto(nome, preco, estoque, categoria, descricao)
+        else:
+            print("\n❌ Dados inválidos!")
+    except ValueError:
+        print("\n❌ Preço e estoque devem ser números!")
+    except Exception as e:
+        print(f"\n❌ Erro: {e}")
+    
+    pausar()
+
+def listar_produtos():
+    """Lista todos os produtos"""
+    limpar_tela()
+    print("=" * 80)
+    print(" " * 25 + "📋 LISTA DE PRODUTOS")
+    print("=" * 80)
+    
+    try:
+        produtos = produto.listar_produtos(limite=20)
+        
+        if produtos:
+            print(f"\n✅ Total: {len(produtos)} produtos\n")
+            print("-" * 80)
+            print(f"{'ID':<5} {'NOME':<30} {'PREÇO':<12} {'ESTOQUE':<10} {'CATEGORIA':<15}")
+            print("-" * 80)
+            
+            for p in produtos:
+                print(f"{p[0]:<5} {p[1][:30]:<30} R$ {p[2]:<9.2f} {p[3]:<10} {p[4][:15]:<15}")
+            
+            print("-" * 80)
+        else:
+            print("\n⚠️  Nenhum produto cadastrado.")
+    except Exception as e:
+        print(f"\n❌ Erro: {e}")
+    
+    pausar()
+
+def buscar_produto():
+    """Busca produto por ID"""
+    limpar_tela()
+    print("=" * 80)
+    print(" " * 25 + "🔍 BUSCAR PRODUTO")
+    print("=" * 80)
+    
+    try:
+        produto_id = int(input("\n🔢 ID do produto: ").strip())
+        p = produto.buscar_produto(produto_id)
+        
+        if p:
+            print("\n✅ Produto encontrado:\n")
+            print(f"   ID: {p[0]}")
+            print(f"   Nome: {p[1]}")
+            print(f"   Descrição: {p[2] if p[2] else '-'}")
+            print(f"   Preço: R$ {p[3]:.2f}")
+            print(f"   Estoque: {p[4]}")
+            print(f"   Categoria: {p[5]}")
+        else:
+            print(f"\n❌ Produto ID {produto_id} não encontrado.")
+    except ValueError:
+        print("\n❌ ID inválido!")
+    except Exception as e:
+        print(f"\n❌ Erro: {e}")
+    
+    pausar()
+
+def atualizar_produto():
+    """Atualiza dados de um produto"""
+    limpar_tela()
+    print("=" * 80)
+    print(" " * 25 + "✏️  ATUALIZAR PRODUTO")
+    print("=" * 80)
+    
+    try:
+        produto_id = int(input("\n🔢 ID do produto: ").strip())
+        
+        print("\n💡 Deixe em branco para não alterar\n")
+        nome = input("📦 Novo nome: ").strip() or None
+        preco_str = input("💰 Novo preço: R$ ").strip()
+        preco = float(preco_str) if preco_str else None
+        estoque_str = input("📊 Novo estoque: ").strip()
+        estoque = int(estoque_str) if estoque_str else None
+        categoria = input("🏷️  Nova categoria: ").strip() or None
+        descricao = input("📝 Nova descrição: ").strip() or None
+        
+        produto.atualizar_produto(produto_id, nome, preco, estoque, categoria, descricao)
+    except ValueError:
+        print("\n❌ Dados inválidos!")
+    except Exception as e:
+        print(f"\n❌ Erro: {e}")
+    
+    pausar()
+
+def deletar_produto():
+    """Deleta um produto"""
+    limpar_tela()
+    print("=" * 80)
+    print(" " * 25 + "🗑️  DELETAR PRODUTO")
+    print("=" * 80)
+    
+    try:
+        produto_id = int(input("\n🔢 ID do produto: ").strip())
+        
+        confirma = input(f"\n⚠️  Tem certeza que deseja deletar o produto ID {produto_id}? (s/n): ").strip().lower()
+        
+        if confirma == 's':
+            produto.deletar_produto(produto_id)
+        else:
+            print("\n❌ Operação cancelada.")
+    except ValueError:
+        print("\n❌ ID inválido!")
+    except Exception as e:
+        print(f"\n❌ Erro: {e}")
+    
+    pausar()
+
+def estatisticas_produtos():
+    """Mostra estatísticas de produtos"""
+    limpar_tela()
+    print("=" * 80)
+    print(" " * 25 + "📊 ESTATÍSTICAS")
+    print("=" * 80)
+    
+    try:
+        stats = produto.estatisticas_produtos()
+        
+        if stats:
+            print(f"\n✅ Total de produtos: {stats['total']}")
+            print(f"📦 Estoque total: {stats['estoque_total']} unidades")
+            
+            if stats['mais_caro']:
+                print(f"💰 Mais caro: {stats['mais_caro'][0]} - R$ {stats['mais_caro'][1]:.2f}")
+            
+            if stats['mais_barato']:
+                print(f"💵 Mais barato: {stats['mais_barato'][0]} - R$ {stats['mais_barato'][1]:.2f}")
+            
+            if stats['por_categoria']:
+                print("\n📊 Por categoria:")
+                for cat, total in stats['por_categoria']:
+                    print(f"   {cat}: {total} produtos")
+    except Exception as e:
+        print(f"\n❌ Erro: {e}")
+    
+    pausar()
+
+# ============================================================================
+# MAIN
+# ============================================================================
+
+if __name__ == "__main__":
+    try:
+        menu_principal()
+    except KeyboardInterrupt:
+        limpar_tela()
+        print("\n\n" + "=" * 80)
+        print(" " * 25 + "👋 SISTEMA ENCERRADO")
+        print("=" * 80 + "\n")
+        sys.exit(0)
