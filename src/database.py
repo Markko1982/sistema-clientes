@@ -18,7 +18,8 @@ class Database:
         self.host = "localhost"
         self.database = "sistema_clientes"
         self.user = "postgres"
-        self.password = ""  # Sem senha (configurado com trust)
+        # senha do usuário postgres (configurada no servidor local)
+        self.password = "postgres"
         self.conexao = None
         self.cursor = None
     
