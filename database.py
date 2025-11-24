@@ -5,14 +5,11 @@ from contextlib import contextmanager
 def get_connection():
     """
     Abre uma conexão com o PostgreSQL usando as variáveis de ambiente.
-
-    Vantagens:
-    - Não deixamos usuário/senha fixos no código.
-    - Para trocar de banco (dev, homolog, prod), basta mudar o .env.
+    Isso evita deixar usuário/senha fixos no código.
     """
     return psycopg2.connect(
         host=os.getenv("PGHOST", "localhost"),
-        port=os.getenv("PGPORT", "5433"),  # padrão 5433, mas pode vir do .env
+        port=os.getenv("PGPORT", "5433"),
         dbname=os.getenv("PGDATABASE", "clientes"),
         user=os.getenv("PGUSER", "app"),
         password=os.getenv("PGPASSWORD", "app"),
@@ -21,18 +18,16 @@ def get_connection():
 @contextmanager
 def get_cursor():
     """
-    Entrega um cursor de banco dentro de uma transação.
+    Entrega um cursor já dentro de uma transação.
+    No final, faz commit automático.
+    Se der erro, dá rollback.
 
     Uso típico:
-        from src.database import get_cursor
+        from database import get_cursor
 
         with get_cursor() as cur:
             cur.execute("SELECT 1")
             print(cur.fetchone())
-
-    - Dá commit automaticamente quando tudo dá certo.
-    - Dá rollback se der erro.
-    - Fecha cursor e conexão no final.
     """
     conn = get_connection()
     cur = conn.cursor()
